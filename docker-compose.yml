@@ -1,0 +1,6 @@
+services:
+  accountservice:
+    image: ${DOCKER_REGISTRY-}accountservice
+    build:
+      context: AccountService
+      dockerfile: Dockerfile
