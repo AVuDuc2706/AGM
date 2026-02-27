@@ -1,0 +1,47 @@
+﻿using AuthService.Models;
+using AuthService.Services.IServices;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+
+namespace AuthService.Services
+{
+    public class JwtTokenGenerator : IJwtTokenGenerator
+    {
+        private readonly JwtOptions _jwtOptions;
+
+        public JwtTokenGenerator(IOptions<JwtOptions> options)
+        {
+            _jwtOptions = options.Value;
+        }
+        public string GenerateToken(ApplicationUser user, IEnumerable<string> roles)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var key = Encoding.ASCII.GetBytes(_jwtOptions.Key);
+            var claimList = new List<Claim>()
+            {
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                new Claim(JwtRegisteredClaimNames.Name, user.UserName)
+            };
+
+            claimList.AddRange(roles.Select(s => new Claim(ClaimTypes.Role, s)));
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Audience = _jwtOptions.Audience,
+                Subject = new ClaimsIdentity(claimList),
+                Issuer = _jwtOptions.Issuer,
+                Expires = DateTime.UtcNow.AddMinutes(_jwtOptions.DurationInMinutes),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
+    }
+}
