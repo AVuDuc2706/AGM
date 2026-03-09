@@ -86,6 +86,17 @@ namespace AuthService.Services
 
             return res;
         }
+
+        public async Task<LoginResponseDto> Logout()
+        {
+            UserDto user = null;
+            LoginResponseDto res = new LoginResponseDto
+            {
+                User = user,
+                Token = string.Empty
+            };
+            return res;
+        }
         public async Task<bool> AssignRole(RegistrationRequestDto registrationRequestDto)
         {
             var user = _appDbContext.ApplicationUsers.FirstOrDefault(s => s.Email.ToLower() == registrationRequestDto.Email.ToLower());

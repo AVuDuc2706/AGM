@@ -6,6 +6,8 @@ namespace AuthService.Services.IServices
     {
         Task<string> Register(RegistrationRequestDto registrationRequestDto);
         Task<LoginResponseDto> Login(LoginRequestDto loginRequestDto);
+
+        Task<LoginResponseDto> Logout();
         Task<bool> AssignRole(RegistrationRequestDto registrationRequestDto);
     }
 }
