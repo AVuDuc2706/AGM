@@ -1,6 +1,42 @@
 services:
-  accountservice:
-    image: ${DOCKER_REGISTRY-}accountservice
-    build:
-      context: AccountService
-      dockerfile: Dockerfile
+    sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        profiles:
+            - prod
+        container_name: sqlserver
+        environment:
+            - ACCEPT_EULA=Y
+            - SA_PASSWORD=${SA_PASSWORD}
+        ports:
+            - "1433:1433"
+        volumes:
+            - sql_data:/var/opt/mssql
+
+    auth-api:
+        image: avuduc/auth-api:1.0
+        build: ./AuthService
+        # container_name: auth-api
+        ports:
+            - "5000:8080"
+        environment:
+            - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+            - ConnectionStrings__DefaultConnection=${AUTH_DB} #read from .env file
+        # depends_on: 
+        #     - sqlserver
+
+
+    account-api:
+        image: avuduc/acc-api:1.0
+        build: ./AccountService
+        # container_name: acc-api
+        ports:
+            - "5001:8080"
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - ConnectionStrings__DefaultConnection=${ACC_DB} #read from .env file
+        # depends_on:
+        #     - sqlserver
+
+volumes:
+    sql_data:
+

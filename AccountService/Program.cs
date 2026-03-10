@@ -15,7 +15,15 @@ IMapper mapper = MappingConfig.RegisterMaps().CreateMapper();
 builder.Services.AddSingleton(mapper);
 
 builder.Services.AddDbContext<AppDbContext>(option =>
-    option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+    sqlOption =>
+    {
+        sqlOption.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorNumbersToAdd: null);
+    }
+        ));
 
 
 builder.Services.AddCors(options =>
@@ -23,7 +31,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAngular",
         policy =>
         {
-            policy.WithOrigins("http://localhost:4200")
+            policy.WithOrigins("http://localhost:4200", "http://localhost:3000")
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });
