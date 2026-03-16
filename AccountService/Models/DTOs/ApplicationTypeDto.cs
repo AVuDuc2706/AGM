@@ -13,5 +13,7 @@ namespace AccountService.Models.DTOs
         public DateTime? CreateDate { get; set; }
 
         public DateTime? UpdateDate { get; set; }
+
+        public Guid UserId { get; set; }
     }
 }

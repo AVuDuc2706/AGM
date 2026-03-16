@@ -36,6 +36,9 @@ namespace AccountService.DBContext
                 entity.Property(e => e.UpdateDate)
                       .IsRequired(false);
 
+                entity.Property(e=> e.UserId)
+                      .IsRequired(true);
+
             });
 
             modelBuilder.Entity<Account>(entity => {

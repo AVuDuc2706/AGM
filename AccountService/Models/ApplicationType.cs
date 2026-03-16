@@ -17,5 +17,7 @@ namespace AccountService.Models
         public DateTime? UpdateDate { get; set; }
 
         public ICollection<Account> Accounts { get; set; } = new List<Account>();
+
+        public Guid UserId { get; set; }
     }
 }

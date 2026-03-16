@@ -11,7 +11,7 @@ namespace AccountService
             var mappingConfig = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<ApplicationType, ApplicationTypeDto>();
-                cfg.CreateMap<ApplicationTypeDto, ApplicationType>();
+                cfg.CreateMap<ApplicationTypeDto, ApplicationType>().ForMember(dest => dest.CreateDate, opt => opt.Ignore());
             });
 
             return mappingConfig;
