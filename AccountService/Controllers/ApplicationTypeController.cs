@@ -109,7 +109,7 @@ namespace AccountService.Controllers
         public ResponseDto UpdateApplicationType(ApplicationType applicationType) {
             try
             {
-                ApplicationType obj = _mapper.Map<ApplicationType>(applicationType);
+                ApplicationType obj = _dbContext.ApplicationTypes.Where(s=>s.ApplicationId == applicationType.ApplicationId).FirstOrDefault();
                 obj.UpdateDate = DateTime.Now;
                 _dbContext.ApplicationTypes.Update(obj);
                 _dbContext.SaveChanges();
