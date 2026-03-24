@@ -18,5 +18,10 @@ namespace AccountService.Models
         public Guid ApplicationTypeId { get; set; }
         public ApplicationType ApplicationType { get; set; }
 
+        public Guid UserId { get; set; }
+
+        public DateTime? CreateDate { get; set; }
+        public DateTime? UpdateDate { get; set; }
+
     }
 }

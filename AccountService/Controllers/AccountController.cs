@@ -1,8 +1,11 @@
 ﻿using AccountService.DBContext;
 using AccountService.Models;
 using AccountService.Models.DTOs;
+using AccountService.Services.IServices;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace AccountService.Controllers
 {
@@ -10,23 +13,42 @@ namespace AccountService.Controllers
     [ApiController]
     public class AccountController : Controller
     {
-        private readonly AppDbContext _dbContext;
+        //private readonly AppDbContext _dbContext;
         private IMapper _mapper;
+        private readonly IAccService _accService;
         private ResponseDto _responseDto;
-        public AccountController(AppDbContext dbContext, IMapper mapper)
+        public AccountController(IMapper mapper,IAccService accService)
         {
-            _dbContext = dbContext;
+            //_dbContext = dbContext;
             _mapper = mapper;
+            _accService = accService;
             _responseDto = new ResponseDto();
         }
 
+        [Authorize]
         [HttpGet]
-        public ResponseDto Get()
+        public ResponseDto Get(int? pageSize, int? pageIndex)
         {
             try
             {
-                IEnumerable<Account> result = _dbContext.Accounts.ToList();
-                _responseDto.Result = _mapper.Map<IEnumerable<AccountDto>>(result);
+                int totalItems = 0;
+                IEnumerable<Account> result = _accService.GetAll();
+
+                if(pageSize != null && pageIndex != null && result != null)
+                {
+                    totalItems = result.Count();
+                    result = result.OrderByDescending(s => s.CreateDate)
+                                    .Skip((pageIndex.Value - 1) * pageSize.Value)
+                                    .Take(pageSize.Value);
+                }
+                
+                //_responseDto.Result = _mapper.Map<IEnumerable<AccountDto>>(result.ToList());
+                _responseDto.Result = new
+                {
+                    Data = _mapper.Map<IEnumerable<AccountDto>>(result.ToList()),
+                    Total = totalItems
+                };
+                //_responseDto.Result = _accService.GetAll();
             }
             catch (Exception ex)
             {
@@ -36,14 +58,16 @@ namespace AccountService.Controllers
             return _responseDto;
         }
 
+        [Authorize]
         [HttpGet]
         [Route("{AccountId:Guid}")]
         public ResponseDto Get(Guid id)
         {
             try
             {
-                Account result = _dbContext.Accounts.Where(s => s.AccountId == id).FirstOrDefault();
-                _responseDto.Result = _mapper.Map<IEnumerable<AccountDto>>(result);
+                Account result = _accService.Get(id);
+                _responseDto.Result = _mapper.Map<AccountDto>(result);
+                //_responseDto.Result = _accService.Get(id);
             }
             catch (Exception ex)
             {
@@ -53,14 +77,46 @@ namespace AccountService.Controllers
             return _responseDto;
         }
 
+        [Authorize]
+        [HttpGet("search")]
+        public ResponseDto Search(string? keyword, int pageIndex = 1, int pageSize = 5) 
+        {
+            try
+            {
+                int totalItems = 0;
+                IEnumerable<Account> result = _accService.Search(keyword);
+                if (result != null)
+                {
+                    totalItems = result.Count();
+                    result = result.OrderByDescending(s => s.CreateDate)
+                                    .Skip((pageIndex - 1) * pageSize)
+                                    .Take(pageSize);        
+                }
+                //_responseDto.Result = _mapper.Map<IEnumerable<AccountDto>>(result.ToList());
+                _responseDto.Result = new
+                {
+                    Data = _mapper.Map<IEnumerable<AccountDto>>(result.ToList()),
+                    Total = totalItems
+                };
+            }
+            catch (Exception ex) 
+            {
+                _responseDto.Success = false;
+                _responseDto.Message = ex.Message;
+            }
+            return _responseDto;
+        }
+
+        [Authorize]
         [HttpPost]
-        public ResponseDto CreateAccountItem(Account account)
+        public ResponseDto CreateAccountItem(AccountDto account)
         {
             try
             {
-                Account obj = _mapper.Map<Account>(account);
-                _dbContext.Accounts.Add(obj);
-                _dbContext.SaveChanges();
+                //Account obj = _mapper.Map<Account>(account);
+                //_dbContext.Accounts.Add(obj);
+                //_dbContext.SaveChanges();
+                Account obj = _accService.Create(account);
                 _responseDto.Result = _mapper.Map<AccountDto>(obj);
             }
             catch (Exception ex)
@@ -71,14 +127,16 @@ namespace AccountService.Controllers
             return _responseDto;
         }
 
+        [Authorize]
         [HttpPut]
-        public ResponseDto UpdateAccountItem(Account account)
+        public ResponseDto UpdateAccountItem(AccountDto account)
         {
             try
             {
-                Account obj = _mapper.Map<Account>(account);
-                _dbContext.Accounts.Update(obj);
-                _dbContext.SaveChanges();
+                //Account obj = _mapper.Map<Account>(account);
+                //_dbContext.Accounts.Update(obj);
+                //_dbContext.SaveChanges();
+                Account obj = _accService.Update(account);
                 _responseDto.Result = _mapper.Map<AccountDto>(obj);
             }
             catch (Exception ex)
@@ -89,14 +147,17 @@ namespace AccountService.Controllers
             return _responseDto;
         }
 
+        [Authorize]
         [HttpDelete]
+        [Route("{id:Guid}")]
         public ResponseDto DeleteAccountItem(Guid id)
         {
             try
             {
-                Account obj = _dbContext.Accounts.Where(s => s.AccountId == id).FirstOrDefault();
-                _dbContext.Accounts.Remove(obj);
-                _dbContext.SaveChanges();
+                //Account obj = _dbContext.Accounts.Where(s => s.AccountId == id).FirstOrDefault();
+                //_dbContext.Accounts.Remove(obj);
+                //_dbContext.SaveChanges();
+                Account obj = _accService.Delete(id);
                 _responseDto.Result = _mapper.Map<AccountDto>(obj);
             }
             catch (Exception ex)

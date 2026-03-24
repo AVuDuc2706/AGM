@@ -63,6 +63,15 @@ namespace AccountService.DBContext
                       .WithMany(t => t.Accounts)
                       .HasForeignKey(a => a.ApplicationTypeId)
                       .OnDelete(DeleteBehavior.Restrict);
+
+                entity.Property(e => e.UserId)
+                      .IsRequired(true);
+
+                entity.Property(e => e.CreateDate)
+                      .IsRequired(false);
+
+                entity.Property(e => e.UpdateDate)
+                      .IsRequired(false);
             });
         }
     }

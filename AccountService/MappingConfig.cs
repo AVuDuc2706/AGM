@@ -12,6 +12,11 @@ namespace AccountService
             {
                 cfg.CreateMap<ApplicationType, ApplicationTypeDto>();
                 cfg.CreateMap<ApplicationTypeDto, ApplicationType>().ForMember(dest => dest.CreateDate, opt => opt.Ignore());
+
+                cfg.CreateMap<Account, AccountDto>();
+                cfg.CreateMap<AccountDto, Account>().ForMember(dest => dest.CreateDate, opt => opt.Ignore());
+                cfg.CreateMap<Account, AccountDto>().ForMember(dest => dest.AppTypeName, opt => opt.MapFrom(s => s.ApplicationType.Name));
+
             });
 
             return mappingConfig;

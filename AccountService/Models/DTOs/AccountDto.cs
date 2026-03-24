@@ -13,5 +13,12 @@ namespace AccountService.Models.DTOs
         public string DisplayName { get; set; } = string.Empty;
 
         public Guid ApplicationTypeId { get; set; }
+
+        public string? AppTypeName { get; set; }
+
+        public Guid UserId { get; set; }
+
+        public DateTime? CreateDate { get; set; }
+        public DateTime? UpdateDate { get; set; }
     }
 }
