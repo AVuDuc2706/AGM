@@ -3,9 +3,13 @@ using AccountService.Models;
 using AccountService.Models.DTOs;
 using AccountService.Services.IServices;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace AccountService.Controllers
 {
@@ -13,13 +17,13 @@ namespace AccountService.Controllers
     [ApiController]
     public class AccountController : Controller
     {
-        //private readonly AppDbContext _dbContext;
+        private readonly AppDbContext _dbContext;
         private IMapper _mapper;
         private readonly IAccService _accService;
         private ResponseDto _responseDto;
-        public AccountController(IMapper mapper,IAccService accService)
+        public AccountController(IMapper mapper,IAccService accService, AppDbContext dbContext)
         {
-            //_dbContext = dbContext;
+            _dbContext = dbContext;
             _mapper = mapper;
             _accService = accService;
             _responseDto = new ResponseDto();
@@ -79,25 +83,34 @@ namespace AccountService.Controllers
 
         [Authorize]
         [HttpGet("search")]
-        public ResponseDto Search(string? keyword, int pageIndex = 1, int pageSize = 5) 
+        public async Task<ResponseDto> Search(string? keyword, int pageIndex = 1, int pageSize = 5) 
         {
             try
             {
                 int totalItems = 0;
+                var sw = Stopwatch.StartNew();
                 IEnumerable<Account> result = _accService.Search(keyword);
-                if (result != null)
+
+                if (result.Count() > 0)
                 {
                     totalItems = result.Count();
                     result = result.OrderByDescending(s => s.CreateDate)
                                     .Skip((pageIndex - 1) * pageSize)
-                                    .Take(pageSize);        
+                                    .Take(pageSize);
+
+                    //sw.Stop();
+                    Console.WriteLine($"DB time AccController: {sw.ElapsedMilliseconds}");
                 }
+                sw.Restart();
+
                 //_responseDto.Result = _mapper.Map<IEnumerable<AccountDto>>(result.ToList());
                 _responseDto.Result = new
                 {
                     Data = _mapper.Map<IEnumerable<AccountDto>>(result.ToList()),
                     Total = totalItems
                 };
+                Console.WriteLine($"Map: {sw.ElapsedMilliseconds}");
+
             }
             catch (Exception ex) 
             {

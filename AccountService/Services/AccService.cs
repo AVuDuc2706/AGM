@@ -4,6 +4,7 @@ using AccountService.Models.DTOs;
 using AccountService.Services.IServices;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace AccountService.Services
 {
@@ -30,15 +31,14 @@ namespace AccountService.Services
 
         public IEnumerable<Account> Search(string key)
         {
-            var result = _dbContext.Accounts.Include(s=>s.ApplicationType).Where(s => s.UserId == _currentUser.UserId);
+            var result = _dbContext.Accounts.AsNoTracking().Include(s=>s.ApplicationType).Where(s => s.UserId == _currentUser.UserId);
             if (!string.IsNullOrEmpty(key) && result != null)
             {
                 key = key.ToLower();
-                result = result.Include(s => s.ApplicationType).Where(s => s.UserName.ToLower().Contains(key)
+                result = result.Where(s => s.UserName.ToLower().Contains(key)
                                                                     || s.DisplayName.ToLower().Contains(key)
                                                                     || s.ApplicationType.Name.ToLower().Contains(key));
             }
-
             return result;
         }
 

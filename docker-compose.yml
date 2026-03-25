@@ -13,7 +13,7 @@ services:
             - sql_data:/var/opt/mssql
 
     auth-api:
-        image: avuduc/auth-api:1.0
+        image: avuduc/auth-api:2.0
         build: ./AuthService
         # container_name: auth-api
         ports:
@@ -26,7 +26,7 @@ services:
 
 
     account-api:
-        image: avuduc/acc-api:1.0
+        image: avuduc/acc-api:2.0
         build: ./AccountService
         # container_name: acc-api
         ports:
