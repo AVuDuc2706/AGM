@@ -19,7 +19,7 @@ builder.Services.AddDbContext<AppDbContext>(option =>
             maxRetryDelay: TimeSpan.FromSeconds(10),
             errorNumbersToAdd: null);
     }));
-
+Console.WriteLine(builder.Configuration.GetConnectionString("DefaultConnection"));
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular",
@@ -50,18 +50,26 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-//    app.UseSwagger();
-//    app.UseSwaggerUI();
-//}
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+
 app.UseHttpsRedirection();
 app.UseCors("AllowAngular");
 app.UseAuthentication();
 
 app.UseAuthorization();
 app.MapControllers();
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
+
 
 app.Run();
